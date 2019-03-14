@@ -1,0 +1,40 @@
+{
+  "name": "typescript-transform-macros",
+  "version": "1.0.0",
+  "description": "Typescript Transform Macros",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["macro.ts", "dist"],
+  "scripts": {
+    "prebuild": "rm -rf dist",
+    "build": "tsc",
+    "prepare": "npm run build",
+    "test": "jest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/jest": "^24.0.11",
+    "jest": "^24.5.0",
+    "ts-jest": "^24.0.0",
+    "typescript": "^3.3.3333"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node"
+  },
+  "directories": {
+    "test": "tests"
+  },
+  "dependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LeDDGroup/typescript-transform-macros.git"
+  },
+  "bugs": {
+    "url": "https://github.com/LeDDGroup/typescript-transform-macros/issues"
+  },
+  "preferDev": true,
+  "homepage": "https://github.com/LeDDGroup/typescript-transform-macros#readme"
+}
