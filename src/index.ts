@@ -13,6 +13,7 @@ class Transformer {
     const postExtract = ts.visitNode(node, this.extractMacros);
     return ts.visitNode(postExtract, this.resolveMacros);
   }
+  // Removes macro definition from code and save them for later
   private extractMacros = (node: ts.Node): ts.Node | undefined => {
     if (ts.isVariableStatement(node)) {
       const firstDeclaration = node.declarationList.declarations[0]; // TODO maybe check for more
@@ -35,6 +36,7 @@ class Transformer {
     }
     return ts.visitEachChild(node, this.extractMacros, this.context);
   };
+  // Search for macros calls and replace them with the macros
   private resolveMacros = (node: ts.Node): ts.Node | undefined => {
     if (ts.isBlock(node) || ts.isSourceFile(node)) {
       const newBlock = this.replaceMacros(node, this.rootMacros);
@@ -54,6 +56,7 @@ class Transformer {
     }
     return ts.visitEachChild(node, this.resolveMacros, this.context);
   };
+  // Prefix macros variables to avoid name collision, returns "return" expression
   private fixMacros = (
     node: ts.Block
   ): [ts.Expression | undefined, ts.Block] => {
@@ -84,12 +87,12 @@ class Transformer {
     const resultNode = ts.visitNode(node, visit);
     return [result, resultNode];
   };
+  // Actually replace the macros in the code
   private replaceMacros = (
     block: ts.BlockLike,
     macros: Macro[]
   ): ts.Statement[] => {
     const visit = (child: ts.Node): ts.Node => {
-      // TODO check if visit enought children
       if (ts.isBlock(child)) {
         return ts.createBlock(this.replaceMacros(child, macros));
       }

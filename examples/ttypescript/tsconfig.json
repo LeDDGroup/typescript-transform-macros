@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "commonjs",
+    "strict": true,
+    "plugins": [{ "transform": "typescript-transform-macros" }],
+    "esModuleInterop": true
+  }
+}

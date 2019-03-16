@@ -1,4 +1,7 @@
-function demo() {
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`transformer should compile 1`] = `
+"function demo() {
     const __input4 = [1, 2, 3, 4];
     const __length4 = __input4.length;
     const __result4 = new Array(__length4);
@@ -17,3 +20,5 @@ function demo() {
     }
     return __result2;
 }
+"
+`;
