@@ -5,63 +5,59 @@ interface Macro {
   value: ts.Expression;
 }
 
-function transformer<T extends ts.Node>(_program: ts.Program) {
-  let counter = 0;
-  return (context: ts.TransformationContext) => {
-    const macros: Macro[] = [];
-    return (node: T) => {
-      const postExtractNode = ts.visitNode(node, extractMacros);
-      return ts.visitNode(postExtractNode, resolveMacros);
-    };
-    function extractMacros(node: ts.Node): ts.Node | undefined {
-      if (ts.isVariableStatement(node)) {
-        const firstDeclaration = node.declarationList.declarations[0]; // TODO maybe check for more
-        if (
-          firstDeclaration.initializer &&
-          ts.isCallExpression(firstDeclaration.initializer) &&
-          ts.isIdentifier(firstDeclaration.initializer.expression) &&
-          firstDeclaration.initializer.expression.text === "MACRO"
-        ) {
-          const name = firstDeclaration.name;
-          if (!ts.isIdentifier(name)) {
-            throw new Error(
-              "Expected name to be Identifier for macro declaration"
-            );
-          }
-          const value = firstDeclaration.initializer.arguments[0];
-          macros.push({ name, value });
-          return undefined;
+class Transformer {
+  counter = 0;
+  rootMacros: Macro[] = [];
+  constructor(public context: ts.TransformationContext) {}
+  transform(node: ts.Node): ts.Node {
+    const postExtract = ts.visitNode(node, this.extractMacros);
+    return ts.visitNode(postExtract, this.resolveMacros);
+  }
+  private extractMacros = (node: ts.Node): ts.Node | undefined => {
+    if (ts.isVariableStatement(node)) {
+      const firstDeclaration = node.declarationList.declarations[0]; // TODO maybe check for more
+      if (
+        firstDeclaration.initializer &&
+        ts.isCallExpression(firstDeclaration.initializer) &&
+        ts.isIdentifier(firstDeclaration.initializer.expression) &&
+        firstDeclaration.initializer.expression.text === "MACRO"
+      ) {
+        const name = firstDeclaration.name;
+        if (!ts.isIdentifier(name)) {
+          throw new Error(
+            "Expected name to be Identifier for macro declaration"
+          );
         }
+        const value = firstDeclaration.initializer.arguments[0];
+        this.rootMacros.push({ name, value });
+        return undefined;
       }
-      return ts.visitEachChild(node, extractMacros, context);
     }
-    function resolveMacros(node: ts.Node): ts.Node | undefined {
+    return ts.visitEachChild(node, this.extractMacros, this.context);
+  };
+  private resolveMacros = (node: ts.Node): ts.Node | undefined => {
+    if (ts.isBlock(node) || ts.isSourceFile(node)) {
+      const newBlock = this.replaceMacros(node, this.rootMacros);
       if (ts.isBlock(node)) {
         return ts.visitEachChild(
-          ts.updateBlock(node, replaceMacros(node, macros, context)),
-          resolveMacros,
-          context
+          ts.updateBlock(node, newBlock),
+          this.resolveMacros,
+          this.context
         );
-      }
-      if (ts.isSourceFile(node)) {
+      } else {
         return ts.visitEachChild(
-          ts.updateSourceFileNode(node, replaceMacros(node, macros, context)),
-          resolveMacros,
-          context
+          ts.updateSourceFileNode(node, newBlock),
+          this.resolveMacros,
+          this.context
         );
       }
-      return ts.visitEachChild(node, resolveMacros, context);
     }
+    return ts.visitEachChild(node, this.resolveMacros, this.context);
   };
-  function fixMacros(
-    node: ts.Block,
-    context: ts.TransformationContext
-  ): [ts.Expression | undefined, ts.Block] {
-    const variableMap: Record<string, boolean> = {};
-    let result: ts.Expression | undefined = undefined;
-    const resultNode = ts.visitNode(node, visit);
-    return [result, resultNode];
-    function visit(node: ts.Node): ts.Node | undefined {
+  private fixMacros = (
+    node: ts.Block
+  ): [ts.Expression | undefined, ts.Block] => {
+    const visit = (node: ts.Node): ts.Node | undefined => {
       if (ts.isReturnStatement(node)) {
         if (!node.expression) throw new Error("Expected macro to return value");
         result = ts.visitNode(node.expression, visit);
@@ -77,29 +73,25 @@ function transformer<T extends ts.Node>(_program: ts.Program) {
         variableMap[node.name.text] = true;
       }
       if (ts.isIdentifier(node) && variableMap[node.text]) {
-        return ts.createIdentifier(newName(node.text));
+        return ts.createIdentifier(
+          "__" + node.text.toLocaleLowerCase() + this.counter.toString()
+        );
       }
-      return ts.visitEachChild(node, visit, context);
-      function newName(name: string) {
-        return "__" + name.toString().toLocaleLowerCase() + counter.toString();
-      }
-    }
-  }
-  function replaceMacros(
+      return ts.visitEachChild(node, visit, this.context);
+    };
+    const variableMap: Record<string, boolean> = {};
+    let result: ts.Expression | undefined = undefined;
+    const resultNode = ts.visitNode(node, visit);
+    return [result, resultNode];
+  };
+  private replaceMacros = (
     block: ts.BlockLike,
-    macros: Macro[],
-    context: ts.TransformationContext
-  ): ts.Statement[] {
-    let result: ts.Statement[] = [];
-    for (const statement of block.statements) {
-      const newStatement = ts.visitNode(statement, visit);
-      result.push(newStatement);
-    }
-    return result;
-    function visit(child: ts.Node): ts.Node {
+    macros: Macro[]
+  ): ts.Statement[] => {
+    const visit = (child: ts.Node): ts.Node => {
       // TODO check if visit enought children
       if (ts.isBlock(child)) {
-        return ts.createBlock(replaceMacros(child, macros, context));
+        return ts.createBlock(this.replaceMacros(child, macros));
       }
       const identifier = getIdentifier(child);
       if (identifier) {
@@ -131,10 +123,9 @@ function transformer<T extends ts.Node>(_program: ts.Program) {
               const block = ts.isBlock(value.body)
                 ? value.body
                 : ts.createBlock([ts.createReturn(value.body)]);
-              counter++;
-              const [resultName, resultBlock] = fixMacros(
-                ts.createBlock(replaceMacros(block, newMacros, context)),
-                context
+              this.counter++;
+              const [resultName, resultBlock] = this.fixMacros(
+                ts.createBlock(this.replaceMacros(block, newMacros))
               );
               result = result.concat(resultBlock.statements);
               if (!resultName) {
@@ -146,10 +137,21 @@ function transformer<T extends ts.Node>(_program: ts.Program) {
           }
         }
       }
-      return ts.visitEachChild(child, visit, context);
+      return ts.visitEachChild(child, visit, this.context);
+    };
+    let result: ts.Statement[] = [];
+    for (const statement of block.statements) {
+      const newStatement = ts.visitNode(statement, visit);
+      result.push(newStatement);
     }
-  }
+    return result;
+  };
 }
+
+const transformer = (
+  _program: ts.Program
+): ts.TransformerFactory<any> => context => node =>
+  new Transformer(context).transform(node);
 
 function getIdentifier(node: ts.Node): ts.Identifier | undefined {
   if (ts.isCallExpression(node) && ts.isIdentifier(node.expression))
