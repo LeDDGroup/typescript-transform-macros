@@ -8,5 +8,5 @@
     "removeComments": true,
     "strict": true
   },
-  "exclude": ["**/*.test.ts", "**/__fixtures/**/*"]
+  "exclude": ["**/*.test.ts", "**/__fixtures/**/*", "examples/**/*"]
 }
