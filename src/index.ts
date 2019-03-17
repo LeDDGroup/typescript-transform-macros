@@ -1,13 +1,8 @@
 import * as ts from "typescript";
 
-interface Macro {
-  name: ts.Identifier;
-  value: ts.Expression;
-}
-
 class Transformer {
   counter = 0;
-  rootMacros: Macro[] = [];
+  rootMacros: Record<string, ts.Expression> = {};
   constructor(public context: ts.TransformationContext) {}
   transform(node: ts.Node): ts.Node {
     const postExtract = ts.visitNode(node, this.extractMacros);
@@ -30,7 +25,7 @@ class Transformer {
           );
         }
         const value = firstDeclaration.initializer.arguments[0];
-        this.rootMacros.push({ name, value });
+        this.rootMacros[name.text] = value;
         return undefined;
       }
     }
@@ -90,71 +85,66 @@ class Transformer {
   // Actually replace the macros in the code
   private replaceMacros = (
     block: ts.BlockLike,
-    macros: Macro[]
+    macros: Record<string, ts.Expression>
   ): ts.Statement[] => {
     const visit = (child: ts.Node): ts.Node => {
       if (ts.isBlock(child)) {
         return ts.createBlock(this.replaceMacros(child, macros));
       }
-      const identifier = getIdentifier(child);
-      if (identifier) {
-        for (const { name, value } of macros) {
-          if (identifier.text === name.text) {
-            if (ts.isIdentifier(child)) {
-              return value;
-            }
-            if (ts.isCallExpression(child)) {
-              if (!ts.isArrowFunction(value)) {
-                throw new Error("Expected function expression for macro value");
-              }
-              const newMacros = macros.slice();
-              for (
-                let i = 0;
-                i < child.arguments.length && i < value.parameters.length;
-                i++
-              ) {
-                const name = value.parameters[i].name;
-                if (!ts.isIdentifier(name)) {
-                  throw new Error(
-                    "Expected identifier in macro function definition"
-                  );
-                }
-                const arg = child.arguments[i];
-                newMacros.push({ name, value: arg });
-              }
-
-              const block = ts.isBlock(value.body)
-                ? value.body
-                : ts.createBlock([ts.createReturn(value.body)]);
-              this.counter++;
-              const [resultName, resultBlock] = this.fixMacros(
-                ts.createBlock(this.replaceMacros(block, newMacros))
-              );
-              result = result.concat(resultBlock.statements);
-              if (!resultName) {
-                throw new Error("Macro should return value");
-              }
-              return resultName;
-            }
-            throw new Error("Expected macro as call expression or identifier");
-          }
-        }
+      if (
+        ts.isIdentifier(child) &&
+        (macros as Object).hasOwnProperty(child.text)
+      ) {
+        return macros[child.text];
       }
       if (
         ts.isCallExpression(child) &&
-        ts.isPropertyAccessExpression(child.expression)
+        ts.isIdentifier(child.expression) &&
+        (macros as Object).hasOwnProperty(child.expression.text)
       ) {
-        for (const { name, value } of macros) {
-          if (child.expression.name.text === name.text) {
-            return ts.visitNode(
-              ts.updateCall(child, child.expression.name, child.typeArguments, [
-                child.expression.expression,
-                ...child.arguments
-              ]),
-              visit
-            );
-          }
+        const value = macros[child.expression.text];
+        if (!ts.isArrowFunction(value)) {
+          throw new Error("Expected function expression for macro value");
         }
+        const newMacros = { ...macros };
+        for (
+          let i = 0;
+          i < child.arguments.length && i < value.parameters.length;
+          i++
+        ) {
+          const argName = value.parameters[i].name;
+          if (!ts.isIdentifier(argName)) {
+            throw new Error("Expected identifier in macro function definition");
+          }
+          const argValue = child.arguments[i];
+          newMacros[argName.text] = argValue;
+        }
+
+        const block = ts.isBlock(value.body)
+          ? value.body
+          : ts.createBlock([ts.createReturn(value.body)]);
+        this.counter++;
+        const [resultName, resultBlock] = this.fixMacros(
+          ts.createBlock(this.replaceMacros(block, newMacros))
+        );
+        result = result.concat(resultBlock.statements);
+        if (!resultName) {
+          throw new Error("Macro should return value");
+        }
+        return resultName;
+      }
+      if (
+        ts.isCallExpression(child) &&
+        ts.isPropertyAccessExpression(child.expression) &&
+        (macros as Object).hasOwnProperty(child.expression.name.text)
+      ) {
+        return ts.visitNode(
+          ts.updateCall(child, child.expression.name, child.typeArguments, [
+            child.expression.expression,
+            ...child.arguments
+          ]),
+          visit
+        );
       }
       return ts.visitEachChild(child, visit, this.context);
     };
@@ -168,15 +158,8 @@ class Transformer {
 }
 
 const transformer = (
-  _program: ts.Program
+  _program?: ts.Program
 ): ts.TransformerFactory<any> => context => node =>
   new Transformer(context).transform(node);
-
-function getIdentifier(node: ts.Node): ts.Identifier | undefined {
-  if (ts.isCallExpression(node) && ts.isIdentifier(node.expression))
-    return node.expression;
-  if (ts.isIdentifier(node)) return node;
-  return undefined;
-}
 
 export default transformer;
