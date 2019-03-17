@@ -30,6 +30,11 @@ const MAP = MACRO(
   }
 );
 
+declare interface Array<T> {
+  MAP: Array<T>["map"];
+  FILTER: Array<T>["filter"];
+}
+
 function demo() {
-  return FILTER(MAP([1, 2, 3, 4], item => item + 1), v => v % 2 === 0);
+  return [1, 2, 3, 4].MAP(item => item + 1).FILTER(v => v % 2 === 0);
 }

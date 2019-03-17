@@ -15,4 +15,8 @@ const MAP = MACRO(
   }
 );
 
-console.log(MAP([1, 2, 3], n => 3 * n + 1));
+declare interface Array<T> {
+  MAP: Array<T>["map"];
+}
+
+console.log([1, 2, 3].MAP(n => 3 * n + 1));

@@ -140,6 +140,22 @@ class Transformer {
           }
         }
       }
+      if (
+        ts.isCallExpression(child) &&
+        ts.isPropertyAccessExpression(child.expression)
+      ) {
+        for (const { name, value } of macros) {
+          if (child.expression.name.text === name.text) {
+            return ts.visitNode(
+              ts.updateCall(child, child.expression.name, child.typeArguments, [
+                child.expression.expression,
+                ...child.arguments
+              ]),
+              visit
+            );
+          }
+        }
+      }
       return ts.visitEachChild(child, visit, this.context);
     };
     let result: ts.Statement[] = [];
