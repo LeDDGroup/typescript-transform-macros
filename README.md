@@ -6,6 +6,7 @@ Typescript Transform Macros
 
 <!--/@-->
 
+[![Maintainability](https://api.codeclimate.com/v1/badges/81de2b2c8735684e4020/maintainability)](https://codeclimate.com/github/LeDDGroup/typescript-transform-macros/maintainability)
 [![codecov](https://codecov.io/gh/LeDDGroup/typescript-transform-macros/branch/master/graph/badge.svg)](https://codecov.io/gh/LeDDGroup/typescript-transform-macros)
 
 <!--@shields("npm", "prettier", "ConventionalCommits", "spacemacs")-->
