@@ -125,7 +125,10 @@ class Transformer {
           : ts.createBlock([ts.createReturn(value.body)]);
         this.counter++;
         const [resultName, resultBlock] = this.fixMacros(
-          ts.createBlock(this.replaceMacros(block, newMacros))
+          ts.visitNode(
+            ts.createBlock(this.replaceMacros(block, newMacros)),
+            visit
+          )
         );
         result = result.concat(resultBlock.statements);
         if (!resultName) {

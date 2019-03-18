@@ -35,6 +35,9 @@ declare interface Array<T> {
   FILTER: Array<T>["filter"];
 }
 
-function demo() {
-  return [1, 2, 3, 4].MAP(item => item + 1).FILTER(v => v % 2 === 0);
-}
+console.log(
+  [1, 2, 3, 4]
+    .FILTER(n => n % 2 === 0)
+    .MAP(n => n + 1)
+    .MAP(n => n.toString())
+);
