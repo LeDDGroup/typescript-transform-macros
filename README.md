@@ -6,6 +6,8 @@ Typescript Transform Macros
 
 <!--/@-->
 
+[![codecov](https://codecov.io/gh/LeDDGroup/typescript-transform-macros/branch/master/graph/badge.svg)](https://codecov.io/gh/LeDDGroup/typescript-transform-macros)
+
 <!--@shields("npm", "prettier", "ConventionalCommits", "spacemacs")-->
 
 [![npm version](https://img.shields.io/npm/v/typescript-transform-macros.svg)](https://www.npmjs.com/package/typescript-transform-macros) [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier) [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org) [![Built with Spacemacs](https://raw.githubusercontent.com/syl20bnr/spacemacs/master/assets/spacemacs-badge.svg?sanitize=true)](http://spacemacs.org)
