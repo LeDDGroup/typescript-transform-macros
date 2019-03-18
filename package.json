@@ -4,10 +4,7 @@
   "description": "Typescript Transform Macros",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": [
-    "macro.ts",
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "prebuild": "rm -rf dist",
     "build": "tsc",
