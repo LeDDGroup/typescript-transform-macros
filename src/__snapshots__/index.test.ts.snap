@@ -1,29 +1,29 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`transformer should compile 1`] = `
-"const ______input666 = [1, 2, 3, 4];
-const ______length666 = ______input666.length;
-const ______result666 = [];
-for (let ______i666 = 0; ______i666 < ______length666; ______i666++) {
-    if (______input666[______i666]
+"const input_1 = [1, 2, 3, 4];
+const length_1 = input_1.length;
+const result_1 = [];
+for (let i_1 = 0; i_1 < length_1; i_1++) {
+    if (input_1[i_1]
         % 2 === 0)
-        ______result666.push(______input666[______i666]);
+        result_1.push(input_1[i_1]);
 }
-const ____input66 = ______result666;
-const ____length66 = ____input66.length;
-const ____result66 = new Array(____length66);
-for (let ____i66 = 0; ____i66 < ____length66; ____i66++) {
-    ____result66[____i66] =
-        ____input66[____i66]
+const input_2 = result_1;
+const length_2 = input_2.length;
+const result_2 = new Array(length_2);
+for (let i_2 = 0; i_2 < length_2; i_2++) {
+    result_2[i_2] =
+        input_2[i_2]
             + 1;
 }
-const __input6 = ____result66;
-const __length6 = __input6.length;
-const __result6 = new Array(__length6);
-for (let __i6 = 0; __i6 < __length6; __i6++) {
-    __result6[__i6] =
-        __input6[__i6].toString();
+const input_3 = result_2;
+const length_3 = input_3.length;
+const result_3 = new Array(length_3);
+for (let i_3 = 0; i_3 < length_3; i_3++) {
+    result_3[i_3] =
+        input_3[i_3].toString();
 }
-console.log(__result6);
+console.log(result_3);
 "
 `;

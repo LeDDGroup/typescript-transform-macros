@@ -68,16 +68,14 @@ class Transformer {
         );
       }
       if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name)) {
-        variableMap[node.name.text] = true;
+        variableMap[node.name.text] = ts.createUniqueName(node.name.text);
       }
       if (ts.isIdentifier(node) && variableMap[node.text]) {
-        return ts.createIdentifier(
-          "__" + node.text.toLocaleLowerCase() + this.counter.toString()
-        );
+        return variableMap[node.text];
       }
       return ts.visitEachChild(node, visit, this.context);
     };
-    const variableMap: Record<string, boolean> = {};
+    const variableMap: Record<string, ts.Identifier> = {};
     let result: ts.Expression | undefined = undefined;
     const resultNode = ts.visitNode(node, visit);
     return [result, resultNode];
