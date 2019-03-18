@@ -1,7 +1,6 @@
 import * as ts from "typescript";
 
 class Transformer {
-  counter = 0;
   rootMacros: Record<string, ts.Expression> = {};
   constructor(public context: ts.TransformationContext) {}
   transform(node: ts.Node): ts.Node {
@@ -121,7 +120,6 @@ class Transformer {
         const block = ts.isBlock(value.body)
           ? value.body
           : ts.createBlock([ts.createReturn(value.body)]);
-        this.counter++;
         const [resultName, resultBlock] = this.fixMacros(
           ts.visitNode(
             ts.createBlock(this.replaceMacros(block, newMacros)),
