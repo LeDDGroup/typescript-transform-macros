@@ -6,6 +6,7 @@ Typescript Transform Macros
 
 <!--/@-->
 
+[![Build Status](https://img.shields.io/travis/LeDDGroup/typescript-transform-macros/master.svg)](https://travis-ci.org/LeDDGroup/typescript-transform-macros)
 [![Maintainability](https://api.codeclimate.com/v1/badges/81de2b2c8735684e4020/maintainability)](https://codeclimate.com/github/LeDDGroup/typescript-transform-macros/maintainability)
 [![codecov](https://codecov.io/gh/LeDDGroup/typescript-transform-macros/branch/master/graph/badge.svg)](https://codecov.io/gh/LeDDGroup/typescript-transform-macros)
 
