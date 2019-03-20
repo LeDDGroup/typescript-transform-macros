@@ -6,39 +6,22 @@ import { readFileSync } from "fs";
 describe("transformer", () => {
   it("should compile", () => {
     const inputFile = resolve(__dirname, "__fixtures/input.ts");
-    const result = compileCode(readFileSync(inputFile).toString());
+    const result = transform(readFileSync(inputFile).toString());
     expect(result).toMatchSnapshot();
   });
 });
 
-// function compile(file: string): string {
-//   let content = "";
-//   const program = ts.createProgram([file], {
-//     target: ts.ScriptTarget.ESNext,
-//     module: ts.ModuleKind.CommonJS
-//   });
-//   program.emit(
-//     undefined,
-//     (_, result) => (content = result),
-//     undefined,
-//     undefined,
-//     {
-//       after: [transformer(program)]
-//     }
-//   );
-//   return content;
-// }
-
-function compileCode(source: string): string {
-  let result = ts.transpileModule(source, {
-    transformers: {
-      before: [transformer()]
-    },
-    compilerOptions: {
-      target: ts.ScriptTarget.ESNext,
-      module: ts.ModuleKind.CommonJS
-    }
-  });
-
-  return result.outputText;
+function transform(sourceText: string) {
+  const source = ts.createSourceFile(
+    "temp.ts",
+    sourceText,
+    ts.ScriptTarget.ESNext
+  );
+  const result = ts.transform<ts.SourceFile>(source, [transformer()], {});
+  const printer = ts.createPrinter();
+  return printer.printNode(
+    ts.EmitHint.Unspecified,
+    result.transformed[0],
+    ts.createSourceFile("result.ts", "", ts.ScriptTarget.ESNext)
+  );
 }

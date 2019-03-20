@@ -1,7 +1,12 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`transformer should compile 1`] = `
-"const input_1 = [1, 2, 3, 4];
+"declare function MACRO<T>(t: T): T;
+declare interface Array<T> {
+    MAP: Array<T>[\\"map\\"];
+    FILTER: Array<T>[\\"filter\\"];
+}
+const input_1 = [1, 2, 3, 4];
 const length_1 = input_1.length;
 const result_1 = [];
 for (let i_1 = 0; i_1 < length_1; i_1++) {
@@ -11,7 +16,7 @@ for (let i_1 = 0; i_1 < length_1; i_1++) {
 }
 const input_2 = result_1;
 const length_2 = input_2.length;
-const result_2 = new Array(length_2);
+const result_2 = (new Array(length_2) as L[]);
 for (let i_2 = 0; i_2 < length_2; i_2++) {
     result_2[i_2] =
         input_2[i_2]
@@ -19,7 +24,7 @@ for (let i_2 = 0; i_2 < length_2; i_2++) {
 }
 const input_3 = result_2;
 const length_3 = input_3.length;
-const result_3 = new Array(length_3);
+const result_3 = (new Array(length_3) as L[]);
 for (let i_3 = 0; i_3 < length_3; i_3++) {
     result_3[i_3] =
         input_3[i_3].toString();
