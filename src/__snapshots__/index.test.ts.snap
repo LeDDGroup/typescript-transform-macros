@@ -3,6 +3,7 @@
 exports[`transformer should compile 1`] = `
 "declare function MACRO<T>(t: T): T;
 declare interface Array<T> {
+    FOR_EACH: Array<T>[\\"forEach\\"];
     MAP: Array<T>[\\"map\\"];
     FILTER: Array<T>[\\"filter\\"];
 }
@@ -29,6 +30,11 @@ for (let i_3 = 0; i_3 < length_3; i_3++) {
     result_3[i_3] =
         input_3[i_3].toString();
 }
-console.log(result_3);
+const input_4 = result_3;
+const length_4 = input_4.length;
+for (let i_4 = 0; i_4 < length_4; i_4++) {
+    console.log(input_4[i_4]);
+}
+;
 "
 `;

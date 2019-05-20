@@ -80,7 +80,7 @@ class Transformer {
     statements: ts.NodeArray<ts.Statement>,
     macros: Map<string, ts.Expression>
   ): ts.Statement[] => {
-    const visit = (node: ts.Node): ts.Node | undefined => {
+    const visit = (node: ts.Node): ts.Node => {
       if (
         [
           ts.SyntaxKind.InterfaceDeclaration,
@@ -128,6 +128,7 @@ class Transformer {
           )
         );
         result = result.concat(resultBlock.statements);
+        if (!resultName) return ts.createEmptyStatement();
         return resultName;
       }
       return ts.visitEachChild(node, visit, this.context);
